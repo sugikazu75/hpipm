@@ -1594,7 +1594,6 @@ void OCP_QCQP_IPM_SOLVE(struct OCP_QCQP *qcqp, struct OCP_QCQP_SOL *qcqp_sol, st
 //	int qcqp_ne = qcqp->dim->ne;
 //	int qcqp_nc = 2*qcqp->dim->nb + 2*qcqp->dim->ng + qcqp->dim->nq + 2*qcqp->dim->ns;
 
-
 	// qp_arg to core workspace
 	cws->lam_min = qp_arg->lam_min;
 	cws->t_min = qp_arg->t_min;
@@ -1602,6 +1601,13 @@ void OCP_QCQP_IPM_SOLVE(struct OCP_QCQP *qcqp, struct OCP_QCQP_SOL *qcqp_sol, st
 	cws->tau_min = qp_arg->tau_min;
 	cws->split_step = qp_arg->split_step;
 	cws->t_lam_min = qp_arg->t_lam_min;
+
+	// alias qp
+	//cws->m = qcqp->m->pa;
+	for(ii=0; ii<cws->nc; ii++)
+		{
+		cws->m[ii] = qcqp->m->pa[ii]*qcqp->d_mask->pa[ii];
+		}
 
 	// alias qp vectors into qp_sol
 	cws->v = qp_sol->ux->pa;
@@ -1757,6 +1763,17 @@ void OCP_QCQP_IPM_SOLVE(struct OCP_QCQP *qcqp, struct OCP_QCQP_SOL *qcqp_sol, st
 	
 
 	cws->alpha = 1.0;
+	cws->alpha_prim = 1.0;
+	cws->alpha_dual = 1.0;
+
+	{
+	REAL rtmp = 0.0;
+	VECNRM_INF(cws->nc, qp->m, 0, &rtmp);
+	if(rtmp==0.0)
+		cws->m_zero = 1;
+	else
+		cws->m_zero = 0;
+	}
 
 
 	// absolute IPM formulation
@@ -1792,7 +1809,8 @@ void OCP_QCQP_IPM_SOLVE(struct OCP_QCQP *qcqp, struct OCP_QCQP_SOL *qcqp_sol, st
 		// IPM loop (absolute formulation)
 		for(kk=0; \
 				kk < qcqp_arg->iter_max & \
-				cws->alpha > qcqp_arg->alpha_min & \
+				cws->alpha_prim > qcqp_arg->alpha_min & \
+				cws->alpha_dual > qcqp_arg->alpha_min & \
 				fabs(mu-tau_min) > qcqp_arg->res_m_max \
 				; kk++)
 			{
@@ -1810,7 +1828,7 @@ void OCP_QCQP_IPM_SOLVE(struct OCP_QCQP *qcqp, struct OCP_QCQP_SOL *qcqp_sol, st
 			mu /= cws->nc;
 			cws->mu = mu;
 			if(kk+1<stat_max)
-				stat[stat_m*(kk+1)+5] = mu;
+				stat[stat_m*(kk+1)+6] = mu;
 
 			}
 
@@ -1831,12 +1849,12 @@ void OCP_QCQP_IPM_SOLVE(struct OCP_QCQP *qcqp, struct OCP_QCQP_SOL *qcqp_sol, st
 			// XXX it is already kk+1
 			if(kk<stat_max)
 				{
-				stat[stat_m*(kk+0)+6] = qcqp_res_max[0];
-				stat[stat_m*(kk+0)+7] = qcqp_res_max[1];
-				stat[stat_m*(kk+0)+8] = qcqp_res_max[2];
-				stat[stat_m*(kk+0)+9] = qcqp_res_max[3];
-				stat[stat_m*(kk+0)+10] = qcqp_res->dual_gap;
-				stat[stat_m*(kk+0)+11] = qcqp_res->obj;
+				stat[stat_m*(kk+0)+7] = qcqp_res_max[0];
+				stat[stat_m*(kk+0)+8] = qcqp_res_max[1];
+				stat[stat_m*(kk+0)+9] = qcqp_res_max[2];
+				stat[stat_m*(kk+0)+10] = qcqp_res_max[3];
+				stat[stat_m*(kk+0)+11] = qcqp_res->dual_gap;
+				stat[stat_m*(kk+0)+12] = qcqp_res->obj;
 				}
 			}
 
@@ -1862,12 +1880,12 @@ void OCP_QCQP_IPM_SOLVE(struct OCP_QCQP *qcqp, struct OCP_QCQP_SOL *qcqp_sol, st
 	// save infinity norm of residuals
 	if(0<stat_max)
 		{
-		stat[stat_m*(0)+6] = qcqp_res_max[0];
-		stat[stat_m*(0)+7] = qcqp_res_max[1];
-		stat[stat_m*(0)+8] = qcqp_res_max[2];
-		stat[stat_m*(0)+9] = qcqp_res_max[3];
-		stat[stat_m*(0)+10] = qcqp_res->dual_gap;
-		stat[stat_m*(0)+11] = qcqp_res->obj;
+		stat[stat_m*(0)+7] = qcqp_res_max[0];
+		stat[stat_m*(0)+8] = qcqp_res_max[1];
+		stat[stat_m*(0)+9] = qcqp_res_max[2];
+		stat[stat_m*(0)+10] = qcqp_res_max[3];
+		stat[stat_m*(0)+11] = qcqp_res->dual_gap;
+		stat[stat_m*(0)+12] = qcqp_res->obj;
 		}
 
 
@@ -1879,7 +1897,8 @@ void OCP_QCQP_IPM_SOLVE(struct OCP_QCQP *qcqp, struct OCP_QCQP_SOL *qcqp_sol, st
 
 	for(kk=0; \
 			kk < qcqp_arg->iter_max & \
-			cws->alpha > qcqp_arg->alpha_min & \
+			cws->alpha_prim > qcqp_arg->alpha_min & \
+			cws->alpha_dual > qcqp_arg->alpha_min & \
 			(qcqp_res_max[0] > qcqp_arg->res_g_max | \
 			qcqp_res_max[1] > qcqp_arg->res_b_max | \
 			qcqp_res_max[2] > qcqp_arg->res_d_max | \
@@ -1924,13 +1943,13 @@ void OCP_QCQP_IPM_SOLVE(struct OCP_QCQP *qcqp, struct OCP_QCQP_SOL *qcqp_sol, st
 		// save infinity norm of residuals
 		if(kk+1<stat_max)
 			{
-			stat[stat_m*(kk+1)+5] = qcqp_res->res_mu;
-			stat[stat_m*(kk+1)+6] = qcqp_res_max[0];
-			stat[stat_m*(kk+1)+7] = qcqp_res_max[1];
-			stat[stat_m*(kk+1)+8] = qcqp_res_max[2];
-			stat[stat_m*(kk+1)+9] = qcqp_res_max[3];
-			stat[stat_m*(kk+1)+10] = qcqp_res->dual_gap;
-			stat[stat_m*(kk+1)+11] = qcqp_res->obj;
+			stat[stat_m*(kk+1)+6] = qcqp_res->res_mu;
+			stat[stat_m*(kk+1)+7] = qcqp_res_max[0];
+			stat[stat_m*(kk+1)+8] = qcqp_res_max[1];
+			stat[stat_m*(kk+1)+9] = qcqp_res_max[2];
+			stat[stat_m*(kk+1)+10] = qcqp_res_max[3];
+			stat[stat_m*(kk+1)+11] = qcqp_res->dual_gap;
+			stat[stat_m*(kk+1)+12] = qcqp_res->obj;
 			}
 
 		AXPY(cws->nc, -tau_min, qp->d_mask, 0, qcqp_res->res_m, 0, qp_ws->tmp_m, 0);
@@ -1951,7 +1970,7 @@ set_status:
 		// max iteration number reached
 		qcqp_ws->status = MAX_ITER;
 		}
-	else if(cws->alpha <= qcqp_arg->alpha_min)
+	else if(cws->alpha_prim <= qcqp_arg->alpha_min || cws->alpha_dual <= qcqp_arg->alpha_min)
 		{
 		// min step lenght
 		qcqp_ws->status = MIN_STEP;

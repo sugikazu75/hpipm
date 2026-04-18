@@ -190,7 +190,11 @@ int main()
 		d_ocp_qp_set_lus_mask(ii, hlus_mask[ii], &qp);
 		}
 
+	//double m_relax = 1e-2;
+	//d_ocp_qp_set_m_all(&m_relax, &qp);
+
 	//d_ocp_qp_codegen("examples/c/data/test_d_ocp_data.c", "a", &dim, &qp);
+	//d_ocp_qp_codegen_matlab("examples/c/data/sparse_data.m", "w", &dim, &qp);
 	d_ocp_qp_print(&dim, &qp);
 
 /************************************************
@@ -378,7 +382,7 @@ int main()
 	printf("\nipm residuals max: res_g = %e, res_b = %e, res_d = %e, res_m = %e\n", res_stat, res_eq, res_ineq, res_comp);
 
 	printf("\nipm iter = %d\n", iter);
-	printf("\nalpha_aff\tmu_aff\t\tsigma\t\talpha_prim\talpha_dual\tmu\t\tres_stat\tres_eq\t\tres_ineq\tres_comp\tdual_gap\tobj\t\tlq fact\t\titref pred\titref corr\tlin res stat\tlin res eq\tlin res ineq\tlin res comp\n");
+	printf("\nalpha_prim_aff\talpha_dual_aff\tmu_aff\t\tsigma\t\talpha_prim\talpha_dual\tmu\t\tres_stat\tres_eq\t\tres_ineq\tres_comp\tdual_gap\tobj\t\tlq fact\t\titref pred\titref corr\tlin res stat\tlin res eq\tlin res ineq\tlin res comp\n");
 	d_print_exp_tran_mat(stat_m, iter+1, stat, stat_m);
 
 	printf("\nocp ipm time = %e [s]\n\n", time_ipm);

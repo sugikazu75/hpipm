@@ -545,6 +545,34 @@ void DENSE_QP_SET(char *field, void *value, struct DENSE_QP *qp)
 		{
 		DENSE_QP_SET_JSG(value, qp);
 		}
+	else if(hpipm_strcmp(field, "m_all"))
+		{
+		DENSE_QP_SET_M_ALL(value, qp);
+		}
+	else if(hpipm_strcmp(field, "m_lb"))
+		{
+		DENSE_QP_SET_M_LB(value, qp);
+		}
+	else if(hpipm_strcmp(field, "m_ub"))
+		{
+		DENSE_QP_SET_M_UB(value, qp);
+		}
+	else if(hpipm_strcmp(field, "m_lg"))
+		{
+		DENSE_QP_SET_M_LG(value, qp);
+		}
+	else if(hpipm_strcmp(field, "m_ug"))
+		{
+		DENSE_QP_SET_M_UG(value, qp);
+		}
+	else if(hpipm_strcmp(field, "m_lls"))
+		{
+		DENSE_QP_SET_M_LLS(value, qp);
+		}
+	else if(hpipm_strcmp(field, "m_lus"))
+		{
+		DENSE_QP_SET_M_LUS(value, qp);
+		}
 	else
 		{
 #ifdef EXT_DEP
@@ -654,7 +682,7 @@ void DENSE_QP_SET_LB(REAL *lb, struct DENSE_QP *qp)
 	int nb = qp->dim->nb;
 
 	PACK_VEC(nb, lb, 1, qp->d, 0);
-	VECSE(nb, 0.0, qp->m, 0);
+	//VECSE(nb, 0.0, qp->m, 0);
 
 	return;
 
@@ -695,7 +723,7 @@ void DENSE_QP_SET_UB(REAL *ub, struct DENSE_QP *qp)
 
 	PACK_VEC(nb, ub, 1, qp->d, nb+ng);
 	VECSC(nb, -1.0, qp->d, nb+ng);
-	VECSE(nb, 0.0, qp->m, nb+ng);
+	//VECSE(nb, 0.0, qp->m, nb+ng);
 
 	return;
 
@@ -750,7 +778,7 @@ void DENSE_QP_SET_LG(REAL *lg, struct DENSE_QP *qp)
 	int ng = qp->dim->ng;
 
 	PACK_VEC(ng, lg, 1, qp->d, nb);
-	VECSE(ng, 0.0, qp->m, nb);
+	//VECSE(ng, 0.0, qp->m, nb);
 
 	return;
 
@@ -792,7 +820,7 @@ void DENSE_QP_SET_UG(REAL *ug, struct DENSE_QP *qp)
 
 	PACK_VEC(ng, ug, 1, qp->d, 2*nb+ng);
 	VECSC(ng, -1.0, qp->d, 2*nb+ng);
-	VECSE(ng, 0.0, qp->m, 2*nb+ng);
+	//VECSE(ng, 0.0, qp->m, 2*nb+ng);
 
 	return;
 
@@ -977,7 +1005,7 @@ void DENSE_QP_SET_LLS(REAL *ls, struct DENSE_QP *qp)
 	int ng = qp->dim->ng;
 
 	PACK_VEC(ns, ls, 1, qp->d, 2*nb+2*ng);
-	VECSE(ns, 0.0, qp->m, 2*nb+2*ng);
+	//VECSE(ns, 0.0, qp->m, 2*nb+2*ng);
 
 	return;
 
@@ -1020,7 +1048,7 @@ void DENSE_QP_SET_LUS(REAL *us, struct DENSE_QP *qp)
 	int ng = qp->dim->ng;
 
 	PACK_VEC(ns, us, 1, qp->d, 2*nb+2*ng+ns);
-	VECSE(ns, 0.0, qp->m, 2*nb+2*ng+ns);
+	//VECSE(ns, 0.0, qp->m, 2*nb+2*ng+ns);
 
 	return;
 
@@ -1048,6 +1076,106 @@ void DENSE_QP_SET_LUS_MASK(REAL *us_mask, struct DENSE_QP *qp)
 		else
 			BLASFEO_SVECEL(qp->d_mask, 2*nb+2*ng+ns+ii) = 1.0;
 #endif
+
+	return;
+
+	}
+
+
+
+void DENSE_QP_SET_M_ALL(REAL *m, struct DENSE_QP *qp)
+	{
+
+	int nb = qp->dim->nb;
+	int ng = qp->dim->ng;
+	int ns = qp->dim->ns;
+
+	VECSE(2*nb+2*ng+2*ns, *m, qp->m, 0);
+
+	return;
+
+	}
+
+
+
+void DENSE_QP_SET_M_LB(REAL *lb, struct DENSE_QP *qp)
+	{
+
+	int nb = qp->dim->nb;
+
+	PACK_VEC(nb, lb, 1, qp->m, 0);
+
+	return;
+
+	}
+
+
+
+void DENSE_QP_SET_M_UB(REAL *ub, struct DENSE_QP *qp)
+	{
+
+	int nb = qp->dim->nb;
+	int ng = qp->dim->ng;
+
+	PACK_VEC(nb, ub, 1, qp->m, nb+ng);
+
+	return;
+
+	}
+
+
+
+void DENSE_QP_SET_M_LG(REAL *lg, struct DENSE_QP *qp)
+	{
+
+	int nb = qp->dim->nb;
+	int ng = qp->dim->ng;
+
+	PACK_VEC(ng, lg, 1, qp->m, nb);
+
+	return;
+
+	}
+
+
+
+void DENSE_QP_SET_M_UG(REAL *ug, struct DENSE_QP *qp)
+	{
+
+	int nb = qp->dim->nb;
+	int ng = qp->dim->ng;
+
+	PACK_VEC(ng, ug, 1, qp->m, 2*nb+ng);
+
+	return;
+
+	}
+
+
+
+void DENSE_QP_SET_M_LLS(REAL *ls, struct DENSE_QP *qp)
+	{
+
+	int ns = qp->dim->ns;
+	int nb = qp->dim->nb;
+	int ng = qp->dim->ng;
+
+	PACK_VEC(ns, ls, 1, qp->m, 2*nb+2*ng);
+
+	return;
+
+	}
+
+
+
+void DENSE_QP_SET_M_LUS(REAL *us, struct DENSE_QP *qp)
+	{
+
+	int ns = qp->dim->ns;
+	int nb = qp->dim->nb;
+	int ng = qp->dim->ng;
+
+	PACK_VEC(ns, us, 1, qp->m, 2*nb+2*ng+ns);
 
 	return;
 

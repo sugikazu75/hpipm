@@ -116,18 +116,15 @@ if(NOT TARGET blasfeo)
 	# select correct name for BLASFEO library
 	if(HPIPM_BLASFEO_LIB STREQUAL "Static")
 		add_library(blasfeo STATIC IMPORTED)
-		if(CMAKE_C_COMPILER_ID MATCHES MSVC)
-			set_target_properties(blasfeo PROPERTIES IMPORTED_LOCATION ${BLASFEO_PATH}/lib/blasfeo.lib)
-		else()
-			set_target_properties(blasfeo PROPERTIES IMPORTED_LOCATION ${BLASFEO_PATH}/lib/libblasfeo.a)
-		endif()
+		set_target_properties(blasfeo PROPERTIES IMPORTED_LOCATION ${BLASFEO_PATH}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}blasfeo${CMAKE_STATIC_LIBRARY_SUFFIX})
 	elseif(HPIPM_BLASFEO_LIB STREQUAL "Shared")
 		add_library(blasfeo SHARED IMPORTED)
-		if(CMAKE_C_COMPILER_ID MATCHES MSVC)
-			set_target_properties(blasfeo PROPERTIES IMPORTED_LOCATION ${BLASFEO_PATH}/lib/blasfeo.dll)
-		else()
-			set_target_properties(blasfeo PROPERTIES IMPORTED_LOCATION ${BLASFEO_PATH}/lib/libblasfeo.so)
-		endif()
+		if (WIN32)
+    		set_target_properties(blasfeo PROPERTIES IMPORTED_LOCATION ${BLASFEO_PATH}/bin/${CMAKE_SHARED_LIBRARY_PREFIX}blasfeo${CMAKE_SHARED_LIBRARY_SUFFIX})
+    		set_target_properties(blasfeo PROPERTIES IMPORTED_IMPLIB ${BLASFEO_PATH}/lib/${CMAKE_IMPORT_LIBRARY_PREFIX}blasfeo${CMAKE_IMPORT_LIBRARY_SUFFIX})
+        else()
+            set_target_properties(blasfeo PROPERTIES IMPORTED_LOCATION ${BLASFEO_PATH}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}blasfeo${CMAKE_SHARED_LIBRARY_SUFFIX})
+        endif()
 	endif()
 endif()
 
@@ -353,8 +350,12 @@ file(GLOB SIM_SRC
 	${PROJECT_SOURCE_DIR}/sim_core/s_sim_rk.c
 	${PROJECT_SOURCE_DIR}/sim_core/s_sim_erk.c
 	)
+# auxiliary
+file(GLOB INTERFACES_SRC
+	${PROJECT_SOURCE_DIR}/interfaces/c/d_ocp_qp_solver.c
+	)
 
-set(HPIPM_SRC ${COND_SRC} ${DENSE_QP_SRC} ${IPM_CORE_SRC} ${OCP_QP_SRC} ${TREE_OCP_QP_SRC} ${AUXILIARY_SRC})
+set(HPIPM_SRC ${COND_SRC} ${DENSE_QP_SRC} ${IPM_CORE_SRC} ${OCP_QP_SRC} ${TREE_OCP_QP_SRC} ${AUXILIARY_SRC} ${INTERFACES_SRC})
 
 add_library(hpipm ${HPIPM_SRC})
 
