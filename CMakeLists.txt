@@ -105,8 +105,16 @@ endif()
 
 # BLASFEO option
 if(NOT TARGET blasfeo)
+	# catkin builds BLASFEO into CATKIN_DEVEL_PREFIX; prefer that path when available
+	set(_DEFAULT_BLASFEO_PATH "/opt/blasfeo")
+	if(DEFINED ENV{CATKIN_DEVEL_PREFIX})
+		set(_DEFAULT_BLASFEO_PATH "$ENV{CATKIN_DEVEL_PREFIX}")
+	elseif(DEFINED CMAKE_INSTALL_PREFIX AND NOT "${CMAKE_INSTALL_PREFIX}" STREQUAL "")
+		# in catkin and many CMake workflows, dependency packages install into CMAKE_INSTALL_PREFIX
+		set(_DEFAULT_BLASFEO_PATH "${CMAKE_INSTALL_PREFIX}")
+	endif()
 	# manually set BLASFEO installation path
-	set(BLASFEO_PATH "/opt/blasfeo" CACHE STRING "BLASFEO installation path")
+	set(BLASFEO_PATH "${_DEFAULT_BLASFEO_PATH}" CACHE STRING "BLASFEO installation path")
 	# match BLASFEO library type with HPIPM library type
 	if(BUILD_SHARED_LIBS MATCHES OFF)
 		set(HPIPM_BLASFEO_LIB "Static" CACHE STRING "BLASFEO library link type")
