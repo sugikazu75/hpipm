@@ -195,7 +195,7 @@ void DENSE_QP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QP_IPM_ARG 
 		pred_corr = 1;
 		cond_pred_corr = 1;
 		itref_pred_max = 0;
-		itref_corr_max = 4;
+		itref_corr_max = 8;
 		reg_prim = 1e-15;
 		reg_dual = 1e-15;
 		lq_fact = 2;
@@ -2230,6 +2230,7 @@ void DENSE_QP_IPM_DELTA_STEP(int kk, struct DENSE_QP *qp, struct DENSE_QP_SOL *q
 		// mask out disregarded constraints
 		VECMUL(cws->nc, qp->d_mask, 0, qp_sol->lam, 0, qp_sol->lam, 0);
 		}
+//d_dense_qp_sol_print(qp->dim, qp_sol);
 
 	return;
 
